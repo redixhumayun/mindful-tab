@@ -22,11 +22,8 @@
     "48": "images/get_started48.png",
     "128": "images/get_started128.png"
   },
-  "web_accessible_resources": [
-    "contentScript.html"
-  ],
   "chrome_url_overrides": {
-    "newtab": "contentScriptNewTab.html"
+    "newtab": "newTab.html"
   },
   "manifest_version": 2
 }

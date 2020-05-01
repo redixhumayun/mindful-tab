@@ -1,18 +1,3 @@
-/**
- * Fetch the contentScript.html and display it in the browser
- */
-// fetch(chrome.runtime.getURL('contentScript.html'))
-//   .then(response => {
-//     return response.text()
-//   })
-//   .then(data => {
-//     const node = new DOMParser().parseFromString(data, 'text/html').body.firstElementChild;
-//     document.body.append(node)
-//     addClickHandlerToButtons()
-//   })
-//   .catch(err => {
-//     throw err
-//   })
 addClickHandlerToButtons()
 
 /**
