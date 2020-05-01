@@ -1,0 +1,32 @@
+{
+  "name": "MindfulTab",
+  "version": "1.0",
+  "description": "A simple extension that reminds you to be mindful of every new tab you open",
+  "permissions": ["activeTab", "tabs", "storage", "https://*/*"],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+  "browser_action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "images/get_started16.png",
+      "32": "images/get_started32.png",
+      "48": "images/get_started48.png",
+      "128": "images/get_started128.png"
+    }
+  },
+  "icons": {
+    "16": "images/get_started16.png",
+    "32": "images/get_started32.png",
+    "48": "images/get_started48.png",
+    "128": "images/get_started128.png"
+  },
+  "web_accessible_resources": [
+    "contentScript.html"
+  ],
+  "chrome_url_overrides": {
+    "newtab": "contentScriptNewTab.html"
+  },
+  "manifest_version": 2
+}
