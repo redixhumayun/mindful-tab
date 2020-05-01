@@ -10,17 +10,29 @@ function addClickHandlerToButtons() {
   }
 }
 
-function clickHandler(event) {
+async function clickHandler(event) {
   const btnClicked = event.target.innerText
-  removeOverlay()
+  try {
+    await setCategoryInStorage(btnClicked)
+    removeOverlay()
+  } catch(err) {
+    throw err
+  }
+}
+
+async function setCategoryInStorage(category) {
+  return new Promise(function returningPromise(resolve, reject) {
+    try {
+      chrome.storage.sync.set({ 'category': category }, function storageSyncCallback() {
+        console.log('Category set')
+        resolve(true)
+      })
+    } catch(err) {
+      reject(err)
+    }
+  })
 }
 
 function removeOverlay() {
   document.getElementById('overlay').remove()
 }
-
-// chrome.runtime.onConnect.addListener(function portListener(port) {
-//   port.onMessage.addListener(function messageReceiver(msg) {
-//     console.log(msg)
-//   })
-// })

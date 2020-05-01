@@ -1,6 +1,12 @@
-let changeColor = document.getElementById('changeColor');
+const urlDiv = document.getElementById('url')
+const categoryDiv = document.getElementById('category')
 
-chrome.storage.sync.get('color', function (data) {
-  changeColor.style.backgroundColor = data.color;
-  changeColor.setAttribute('value', data.color);
-});
+chrome.tabs.query({ active: true, lastFocusedWindow: true }, function tabQueryCallback(tabs) {
+  const url = tabs[0].url
+  urlDiv.innerText = url
+})
+
+chrome.storage.sync.get('category', function getSyncDataCallback(data) {
+  const { category } = data
+  categoryDiv.innerText = category
+})
