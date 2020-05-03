@@ -19,7 +19,7 @@
   font-family: monospace;
 }
 
-.buttons-container {
+#buttons-container {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
@@ -28,7 +28,7 @@
 
 /* adding three selectors here to add CSS specificity to sites */
 /* might have to end up adding the !important flag to border-radius */
-#overlay .buttons-container button {
+#overlay #buttons-container button {
   height: 25%;
   width: 25%;
   margin: 0 2.5% 0 2.5%;
