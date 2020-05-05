@@ -1,5 +1,5 @@
 /**
- * Fetch all the categories stored in localStorage
+ * IIFE that runs and sets up the categories and displays them initially
  */
 (async function() {
   let categories = []
@@ -12,6 +12,9 @@
   addClickHandlerToButtons()
 })()
 
+/**
+ * Fetch all the categories stored in localStorage
+ */
 async function getStoredCategories() {
   return new Promise((resolve, reject) => {
     chrome.storage.sync.get(['categories'], function getterCallback(result) {

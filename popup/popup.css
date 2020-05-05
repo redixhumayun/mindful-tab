@@ -1,0 +1,35 @@
+body {
+  width: 200px;
+  height: 200px;
+}
+
+#popup-display {
+  width: 100%;
+}
+
+#popup-menu {
+  width: 100%;
+}
+
+#popup-menu ul {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  padding-inline-start: inherit;
+  list-style: none;
+}
+
+#popup-menu ul a {
+  font-size: 1.2em;
+  cursor: pointer;
+  border-bottom: 1px solid transparent;
+  transition: border-bottom .75s ease;
+}
+
+#popup-menu ul a.selected {
+  border-bottom: 3px solid red;
+}
+
+#popup-menu ul a:hover {
+  border-bottom: 3px solid red;
+}

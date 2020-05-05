@@ -8,6 +8,7 @@
     "persistent": false
   },
   "browser_action": {
+    "default_popup": "./popup/popup.html",
     "default_icon": {
       "16": "images/mindful-icon-16-edited.png",
       "32": "images/mindful-icon-32-edited.png",
@@ -24,5 +25,6 @@
   "chrome_url_overrides": {
     "newtab": "newTab.html"
   },
+  "content_security_policy": "script-src 'self' https://unpkg.com/react@16/umd/react.development.js https://unpkg.com/react-dom@16/umd/react-dom.development.js https://unpkg.com/babel-standalone@6/babel.min.js 'sha256-7z0h1sg0Assdr4z++zsLkP0LmciQtqWVLzBT/u/3who='; object-src 'self'",
   "manifest_version": 2
 }
