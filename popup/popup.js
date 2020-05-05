@@ -11,7 +11,6 @@ function PopUp() {
   return (
     <React.Fragment>
       <NavBar navTabSelected={navTab} setNavTab={setNavTab} />
-      {/* <Content navTabSelected={navTab} /> */}
       {content}
     </React.Fragment>
   )
@@ -53,7 +52,12 @@ function CategoriesTabContent() {
     <ul>
       {
         data.map(category => {
-          return <li>{category}</li>
+          return (
+            <div>
+              <li>{category}</li>
+              <button>Remove</button>
+            </div>
+          )
         })
       }
     </ul>
@@ -70,7 +74,6 @@ function fetchCurrentUrl() {
 }
 
 function fetchCurrentCategories() {
-  console.log('Fetching current categories')
   return new Promise((resolve, reject) => {
     return chrome.storage.sync.get('categories', function getterCallback(data) {
       console.log(data)
