@@ -26,5 +26,8 @@
     "newtab": "newTab.html"
   },
   "content_security_policy": "script-src 'self' https://unpkg.com/react@16/umd/react.development.js https://unpkg.com/react-dom@16/umd/react-dom.development.js https://unpkg.com/babel-standalone@6/babel.min.js 'sha256-7z0h1sg0Assdr4z++zsLkP0LmciQtqWVLzBT/u/3who='; object-src 'self'",
+  "web_accessible_resources": [
+    "images/delete-icon.svg"
+  ],
   "manifest_version": 2
 }

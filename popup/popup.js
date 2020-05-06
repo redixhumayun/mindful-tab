@@ -13,6 +13,7 @@ function PopUp() {
 
   return (
     <React.Fragment>
+      <div>Icons made by <a href="https://www.flaticon.com/authors/kiranshastry" title="Kiranshastry">Kiranshastry</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
       <NavBar navTabSelected={navTab} setNavTab={setNavTab} />
       {content}
     </React.Fragment>
@@ -66,7 +67,7 @@ function CategoriesTabContent() {
       setData(data)
     })
   }, [])
-  
+  console.log(chrome.runtime.getURL('delete-icon.svg'))
   return (
     <ul>
       {
@@ -74,7 +75,9 @@ function CategoriesTabContent() {
           return (
             <div key={`${category}`} className='category-div'>
               <li>{category}</li>
-              <button>Remove</button>
+              {/* <button>Remove</button> */}
+              {/* <button><img src="chrome-extension://phjkhgfhkipgkdjanfgaaijkohlaneeh/delete-icon.svg" /></button> */}
+              <button><img src={`${chrome.runtime.getURL('delete-icon.svg')}`} /></button>
             </div>
           )
         })

@@ -19,6 +19,22 @@ function PopUp() {
   return React.createElement(
     React.Fragment,
     null,
+    React.createElement(
+      'div',
+      null,
+      'Icons made by ',
+      React.createElement(
+        'a',
+        { href: 'https://www.flaticon.com/authors/kiranshastry', title: 'Kiranshastry' },
+        'Kiranshastry'
+      ),
+      ' from ',
+      React.createElement(
+        'a',
+        { href: 'https://www.flaticon.com/', title: 'Flaticon' },
+        'www.flaticon.com'
+      )
+    ),
     React.createElement(NavBar, { navTabSelected: navTab, setNavTab: setNavTab }),
     content
   );
@@ -114,7 +130,7 @@ function CategoriesTabContent() {
       setData(data);
     });
   }, []);
-
+  console.log(chrome.runtime.getURL('delete-icon.svg'));
   return React.createElement(
     'ul',
     null,
@@ -130,7 +146,7 @@ function CategoriesTabContent() {
         React.createElement(
           'button',
           null,
-          'Remove'
+          React.createElement('img', { src: '' + chrome.runtime.getURL('delete-icon.svg') })
         )
       );
     })
