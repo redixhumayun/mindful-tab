@@ -1,3 +1,6 @@
+/**
+ * Entry point for the React app
+ */
 function PopUp() {
   const [navTab, setNavTab] = React.useState('current')
 
@@ -29,31 +32,47 @@ function NavBar(props) {
   )
 }
 
+/**
+ * Content that is displayed when a user picks the Current tab in the pop up
+ */
 function CurrentTabContent() {
-  const [data, setData] = React.useState()
+  const [url, setUrl] = React.useState()
+  const [category, setCategory] = React.useState('')
   React.useEffect(() => {
     fetchCurrentUrl().then(data => {
-      setData(data)
+      setUrl(data)
+    })
+    fetchCurrentCategory().then(category => {
+      setCategory(category)
     })
   })
 
-  return <p>{data}</p>
+  return (
+    <div className='current-tab-content'>
+      {/* <p>{url}</p> */}
+     <p>This tab is categorized as:</p> 
+      <h2 className='current-tab-header'>{category}</h2>
+    </div>
+  )
 }
 
+/**
+ * Content that is displayed when a user picks the Categories tab in the pop up
+ */
 function CategoriesTabContent() {
   const [data, setData] = React.useState([])
   React.useEffect(() => {
-    fetchCurrentCategories().then(data => {
+    fetchCategories().then(data => {
       setData(data)
     })
-  })
-
+  }, [])
+  
   return (
     <ul>
       {
         data.map(category => {
           return (
-            <div>
+            <div key={`${category}`} className='category-div'>
               <li>{category}</li>
               <button>Remove</button>
             </div>
@@ -64,6 +83,9 @@ function CategoriesTabContent() {
   )
 }
 
+/**
+ * Get the url that is currently entered for the tab
+ */
 function fetchCurrentUrl() {
   return new Promise((resolve, reject) => {
     return chrome.tabs.query({ active: true, currentWindow: true }, function tabQueryCallback(tabs) {
@@ -73,10 +95,60 @@ function fetchCurrentUrl() {
   })
 }
 
-function fetchCurrentCategories() {
+/**
+ * Get the category that the current tab has been assigned to
+ * First, fetch the id of the current tab
+ * Next, check the tabCategories object from localStorage for the tab id
+ */
+function fetchCurrentCategory() {
+  return new Promise((resolve, reject) => {
+    fetchCurrentTabId().then(tabId => {
+      fetchTabCategories().then(tabCategories => {
+        const filteredTabCategory = tabCategories.filter(tabCategoryObj => tabCategoryObj.id === tabId)
+        if (filteredTabCategory.length > 0) {
+          resolve(filteredTabCategory[0].category)
+        } else {
+          resolve('')
+        }
+      }).catch(err => {
+        reject(err)
+      })
+    }).catch(err => {
+      reject(err)
+    })
+  })
+}
+
+/**
+ * Get the categories that have been assigned to all tabs in tabCategories object
+ */
+function fetchTabCategories() {
+  return new Promise((resolve, reject) => {
+    chrome.storage.sync.get('tabCategories', function getterCallback(data) {
+      const { tabCategories } = data
+      resolve(tabCategories)
+    })
+  })
+}
+
+/**
+ * Get the id of the current tab that the popup has been opened in
+ */
+function fetchCurrentTabId() {
+  return new Promise((resolve, reject) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, function tabQueryCallback(tabs) {
+      const id = tabs[0].id
+      resolve(id)
+    })
+  })
+}
+
+/**
+ * Get all the categories that have been set up by the user
+ */
+function fetchCategories() {
   return new Promise((resolve, reject) => {
     return chrome.storage.sync.get('categories', function getterCallback(data) {
-      console.log(data)
       const { categories } = data
       resolve(categories)
     })

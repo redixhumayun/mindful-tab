@@ -1,11 +1,11 @@
 /**
  * IIFE that runs and sets up the categories and displays them initially
  */
-(async function() {
+(async function () {
   let categories = []
   try {
     categories = await getStoredCategories()
-  } catch(err) {
+  } catch (err) {
     throw err
   }
   showCategories(categories)
@@ -56,26 +56,78 @@ function addClickHandlerToButtons() {
 async function clickHandler(event) {
   const btnClicked = event.target.innerText
   try {
-    await setCategoryInStorage(btnClicked)
+    const id = await getCurrentTabId()
+    await updateCategoryForTabsInStorage(btnClicked, id)
     removeOverlay()
-  } catch(err) {
+  } catch (err) {
     throw err
   }
+}
+
+function getCurrentTabId() {
+  return new Promise((resolve, reject) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, function tabQueryCallback(tabs) {
+      const id = tabs[0].id
+      resolve(id)
+    })
+  })
 }
 
 /**
  * Sets the category for a specific tab in storage
  * @param {String} category 
+ * @param {String} id
  */
-async function setCategoryInStorage(category) {
-  return new Promise(function returningPromise(resolve, reject) {
+async function updateCategoryForTabsInStorage(category, id) {
+  let categoriesForTabs = []
+  try {
+    categoriesForTabs = await getCategoriesForTabsInStorage()
+  } catch (err) {
+    throw err
+  }
+  return new Promise((resolve, reject) => {
+    let updatedCategoriesForTabs = []
+
+    /**
+     * Check if the tab id already exists in the tabCategories object
+     * If it does not, push a new object
+     * If it does, map the tabCategories object and update the relevant object
+     */
+    const doesIdExist = categoriesForTabs.some(categoryTabObj => categoryTabObj.id === id)
+    if (!doesIdExist) {
+      updatedCategoriesForTabs = [...categoriesForTabs, { category, id }]
+    } else {
+      updatedCategoriesForTabs = categoriesForTabs.map(categoryTabObj => {
+        if (categoryTabObj.id === id) {
+          return Object.assign({}, { ...categoryTabObj }, { category, id })
+        }
+        return categoryTabObj
+      })
+    }
+
     try {
-      chrome.storage.sync.set({ 'category': category }, function storageSyncCallback() {
+      chrome.storage.sync.set({ 'tabCategories': updatedCategoriesForTabs }, function storageSetterCallback() {
         resolve(true)
       })
-    } catch(err) {
+    } catch (err) {
       reject(err)
     }
+  })
+}
+
+/**
+ * Function that fetches the current tabCategories value from localStorage
+ * @return {Array<Object>} 
+ */
+async function getCategoriesForTabsInStorage() {
+  return new Promise((resolve, reject) => {
+    chrome.storage.sync.get(['tabCategories'], function storageSyncGetterCallback(data) {
+      const { tabCategories } = data
+      if (!tabCategories) {
+        return resolve([])
+      }
+      return resolve(tabCategories)
+    })
   })
 }
 

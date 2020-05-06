@@ -5,8 +5,12 @@ body {
 
 #popup-display {
   width: 100%;
+  height: 100%;
 }
 
+/**
+* Navigation Menu Styling
+*/
 #popup-menu {
   width: 100%;
 }
@@ -32,4 +36,35 @@ body {
 
 #popup-menu ul a:hover {
   border-bottom: 3px solid red;
+}
+/**
+* Navigation Menu Styling
+*/
+
+/**
+* Current Tab Styling
+*/
+.current-tab-content {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  flex-direction: column;
+  height: 100%;
+}
+
+/**
+* Category Tab Styling
+*/
+#popup-display ul {
+  padding-inline-start: 0px;
+}
+
+.category-div {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.category-div li {
+  list-style: none;
 }
