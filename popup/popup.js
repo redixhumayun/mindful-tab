@@ -67,7 +67,7 @@ function CategoriesTabContent() {
       setData(data)
     })
   }, [])
-  console.log(chrome.runtime.getURL('delete-icon.svg'))
+  console.log(chrome.runtime.getURL('/images/delete-icon.svg'))
   return (
     <ul>
       {
@@ -77,7 +77,7 @@ function CategoriesTabContent() {
               <li>{category}</li>
               {/* <button>Remove</button> */}
               {/* <button><img src="chrome-extension://phjkhgfhkipgkdjanfgaaijkohlaneeh/delete-icon.svg" /></button> */}
-              <button><img src={`${chrome.runtime.getURL('delete-icon.svg')}`} /></button>
+              <button><img src={`${chrome.runtime.getURL('/images/delete-icon.svg')}`} width={'100%'} height={'100%'} /></button>
             </div>
           )
         })
