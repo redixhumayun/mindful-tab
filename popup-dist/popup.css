@@ -55,16 +55,21 @@ body {
 /**
 * Category Tab Styling
 */
-#popup-display ul {
-  padding-inline-start: 0px;
+.category-wrapper {
+  display: grid;
+  grid-template-columns: 50% 50%;
+  text-align: center;
+  align-items: center;
 }
 
-.category-div {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
+.category-wrapper img {
+  width: 50%;
+  height: 50%;
+  margin: 0 auto;
+  transition: transform .25s ease;
 }
 
-.category-div li {
-  list-style: none;
+.category-wrapper img:hover {
+  transform: scale(1.4);
+  cursor: pointer;
 }

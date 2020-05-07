@@ -51,7 +51,7 @@ function CurrentTabContent() {
   return (
     <div className='current-tab-content'>
       {/* <p>{url}</p> */}
-     <p>This tab is categorized as:</p> 
+      <p>This tab is categorized as:</p>
       <h2 className='current-tab-header'>{category}</h2>
     </div>
   )
@@ -67,22 +67,19 @@ function CategoriesTabContent() {
       setData(data)
     })
   }, [])
-  console.log(chrome.runtime.getURL('/images/delete-icon.svg'))
   return (
-    <ul>
+    <div className='category-wrapper'>
       {
         data.map(category => {
           return (
-            <div key={`${category}`} className='category-div'>
-              <li>{category}</li>
-              {/* <button>Remove</button> */}
-              {/* <button><img src="chrome-extension://phjkhgfhkipgkdjanfgaaijkohlaneeh/delete-icon.svg" /></button> */}
-              <button><img src={`${chrome.runtime.getURL('/images/delete-icon.svg')}`} width={'100%'} height={'100%'} /></button>
-            </div>
+            <React.Fragment>
+              <h3>{category}</h3>
+              <img src={`${chrome.runtime.getURL('/images/delete-icon.svg')}`} />
+            </React.Fragment>
           )
         })
       }
-    </ul>
+    </div>
   )
 }
 
