@@ -36,7 +36,7 @@ function NavBar(props) {
 /**
  * Content that is displayed when a user picks the Current tab in the pop up
  */
-function CurrentTabContent() {
+function CurrentTabContent(props) {
   const [url, setUrl] = React.useState()
   const [category, setCategory] = React.useState('')
 
@@ -133,7 +133,7 @@ function CurrentTabContent() {
 /**
  * Component that is displayed when a user picks the Categories tab in the pop up
  */
-function CategoriesTabContent() {
+function CategoriesTabContent(props) {
   const [categories, setCategories] = React.useState([])
 
   const makeFetchCategoriesApiCall = () => {
@@ -165,7 +165,6 @@ function CategoriesTabContent() {
     })
   }
 
-
   const deleteCategoryClickHandler = (category) => {
     fetchCategories().then(categories => {
       const updatedCategories = deleteCategoryFromCategories(categories, category)
@@ -174,6 +173,12 @@ function CategoriesTabContent() {
           setCategories(data)
         })
       }).catch(err => { throw err })
+    })
+  }
+  
+  const newCategoryAdded = () => {
+    makeFetchCategoriesApiCall().then(categories => {
+      setCategories(categories)
     })
   }
 
@@ -192,9 +197,65 @@ function CategoriesTabContent() {
           })
         }
       </div>
-      <button id='add-category-btn'>Add Category</button>
+      <AddNewCategory newCategoryAdded={newCategoryAdded} />
     </React.Fragment>
   )
+}
+
+/**
+ * Component that is used to display the new category UI that will allow
+ * users to add a new category
+ * @param {Object} props 
+ */
+function AddNewCategory(props) {
+  const [addingCategory, setAddingCategory] = React.useState(false)
+  const [newCategory, setNewCategory] = React.useState('')
+  const [categoryExistsError, setCategoryExistsError] = React.useState(false)
+  const [inputError, setInputError] = React.useState('')
+
+  /**
+   * Function that is called when user attempts to add a new category
+   * Function will check whether the category being added already exists
+   */
+  const addNewCategory = () => {
+    //  Check if this category already exists
+    fetchCategories().then(categories => {
+      const doesCategoryAlreadyExist = categories.some(category => category.toLowerCase() === newCategory.toLowerCase())
+      if (doesCategoryAlreadyExist === true) {
+        setCategoryExistsError(true)
+        setInputError('This category alrady exists')
+        return
+      }
+
+      const updatedCategories = [...categories, newCategory]
+      updateCategoriesInLocalStorage(updatedCategories).then(response => {
+        setNewCategory('')
+        setAddingCategory(false)
+        props.newCategoryAdded()
+      })
+    })
+  }
+
+  //  Decide which content to render based on state of addingCategory
+  let content
+
+  if (addingCategory === false) {
+    content = <button id='add-category-btn' onClick={() => setAddingCategory(true)}>Add Category</button>
+  } else if (addingCategory === true) {
+    content = 
+      <React.Fragment>
+        <input className={categoryExistsError ? 'error' : null} id='new-category' type='text' 
+            onChange={(e) => setNewCategory(e.target.value)}
+            value={newCategory} />
+        <label htmlFor='new-category'>{inputError}</label>
+        <div id='add-category-btns-container'>
+          <button onClick={() => setAddingCategory(false)}>Cancel</button>
+          <button onClick={addNewCategory}>Done</button>
+        </div>
+      </React.Fragment>
+  }
+
+  return <React.Fragment>{content}</React.Fragment>
 }
 
 /**

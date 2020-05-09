@@ -1,5 +1,7 @@
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 /**
  * Entry point for the React app
  */
@@ -64,7 +66,7 @@ function NavBar(props) {
 /**
  * Content that is displayed when a user picks the Current tab in the pop up
  */
-function CurrentTabContent() {
+function CurrentTabContent(props) {
   var _React$useState3 = React.useState(),
       _React$useState4 = _slicedToArray(_React$useState3, 2),
       url = _React$useState4[0],
@@ -182,7 +184,7 @@ function CurrentTabContent() {
 /**
  * Component that is displayed when a user picks the Categories tab in the pop up
  */
-function CategoriesTabContent() {
+function CategoriesTabContent(props) {
   var _React$useState7 = React.useState([]),
       _React$useState8 = _slicedToArray(_React$useState7, 2),
       categories = _React$useState8[0],
@@ -230,6 +232,12 @@ function CategoriesTabContent() {
     });
   };
 
+  var newCategoryAdded = function newCategoryAdded() {
+    makeFetchCategoriesApiCall().then(function (categories) {
+      setCategories(categories);
+    });
+  };
+
   return React.createElement(
     React.Fragment,
     null,
@@ -252,11 +260,111 @@ function CategoriesTabContent() {
         );
       })
     ),
-    React.createElement(
+    React.createElement(AddNewCategory, { newCategoryAdded: newCategoryAdded })
+  );
+}
+
+/**
+ * Component that is used to display the new category UI that will allow
+ * users to add a new category
+ * @param {Object} props 
+ */
+function AddNewCategory(props) {
+  var _React$useState9 = React.useState(false),
+      _React$useState10 = _slicedToArray(_React$useState9, 2),
+      addingCategory = _React$useState10[0],
+      setAddingCategory = _React$useState10[1];
+
+  var _React$useState11 = React.useState(''),
+      _React$useState12 = _slicedToArray(_React$useState11, 2),
+      newCategory = _React$useState12[0],
+      setNewCategory = _React$useState12[1];
+
+  var _React$useState13 = React.useState(false),
+      _React$useState14 = _slicedToArray(_React$useState13, 2),
+      categoryExistsError = _React$useState14[0],
+      setCategoryExistsError = _React$useState14[1];
+
+  var _React$useState15 = React.useState(''),
+      _React$useState16 = _slicedToArray(_React$useState15, 2),
+      inputError = _React$useState16[0],
+      setInputError = _React$useState16[1];
+
+  /**
+   * Function that is called when user attempts to add a new category
+   * Function will check whether the category being added already exists
+   */
+
+
+  var addNewCategory = function addNewCategory() {
+    //  Check if this category already exists
+    fetchCategories().then(function (categories) {
+      var doesCategoryAlreadyExist = categories.some(function (category) {
+        return category.toLowerCase() === newCategory.toLowerCase();
+      });
+      if (doesCategoryAlreadyExist === true) {
+        setCategoryExistsError(true);
+        setInputError('This category alrady exists');
+        return;
+      }
+
+      var updatedCategories = [].concat(_toConsumableArray(categories), [newCategory]);
+      updateCategoriesInLocalStorage(updatedCategories).then(function (response) {
+        setNewCategory('');
+        setAddingCategory(false);
+        props.newCategoryAdded();
+      });
+    });
+  };
+
+  //  Decide which content to render based on state of addingCategory
+  var content = void 0;
+
+  if (addingCategory === false) {
+    content = React.createElement(
       'button',
-      { id: 'add-category-btn' },
+      { id: 'add-category-btn', onClick: function onClick() {
+          return setAddingCategory(true);
+        } },
       'Add Category'
-    )
+    );
+  } else if (addingCategory === true) {
+    content = React.createElement(
+      React.Fragment,
+      null,
+      React.createElement('input', { className: categoryExistsError ? 'error' : null, id: 'new-category', type: 'text',
+        onChange: function onChange(e) {
+          return setNewCategory(e.target.value);
+        },
+        value: newCategory }),
+      React.createElement(
+        'label',
+        { htmlFor: 'new-category' },
+        inputError
+      ),
+      React.createElement(
+        'div',
+        { id: 'add-category-btns-container' },
+        React.createElement(
+          'button',
+          { onClick: function onClick() {
+              return setAddingCategory(false);
+            } },
+          'Cancel'
+        ),
+        React.createElement(
+          'button',
+          { onClick: addNewCategory },
+          'Done'
+        )
+      )
+    );
+  }
+
+  return React.createElement(
+    React.Fragment,
+    null,
+    content
   );
 }
 
