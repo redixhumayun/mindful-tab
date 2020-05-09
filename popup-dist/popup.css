@@ -73,3 +73,13 @@ body {
   transform: scale(1.4);
   cursor: pointer;
 }
+
+/* Add Category Button Styling */
+#add-category-btn {
+  display: block;
+  margin: 0 auto;
+  width: 75%;
+  height: auto;
+  background-color: green;
+  border-radius: 5px;
+}

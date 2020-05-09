@@ -15,7 +15,7 @@ function PopUp() {
     <React.Fragment>
       <NavBar navTabSelected={navTab} setNavTab={setNavTab} />
       {content}
-      <div style={{ fontSize: '0.75em' }}>Icons made by <a href="https://www.flaticon.com/authors/kiranshastry" title="Kiranshastry">Kiranshastry</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+      {/* <div style={{ fontSize: '0.75em' }}>Icons made by <a href="https://www.flaticon.com/authors/kiranshastry" title="Kiranshastry">Kiranshastry</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div> */}
     </React.Fragment>
   )
 }
@@ -131,7 +131,7 @@ function CurrentTabContent() {
 }
 
 /**
- * Content that is displayed when a user picks the Categories tab in the pop up
+ * Component that is displayed when a user picks the Categories tab in the pop up
  */
 function CategoriesTabContent() {
   const [categories, setCategories] = React.useState([])
@@ -148,7 +148,25 @@ function CategoriesTabContent() {
     })
   }, [])
 
-  const deleteCategoryClickHandler = React.useCallback((category) => {
+  /**
+ * Function that iterates over the tabCategories array and
+ * @param {String[]} categories the array of strings that represent user defined categories
+ * @param {String} category the single category that the user has chosen to delete
+ */
+  function deleteCategoryFromCategories(categories, category) {
+    return categories.map(function categoriesMapper(cat) {
+      if (cat !== category) {
+        return cat
+      }
+    }).filter(category => {
+      if ((category !== null || category !== undefined)) {
+        return category
+      }
+    })
+  }
+
+
+  const deleteCategoryClickHandler = (category) => {
     fetchCategories().then(categories => {
       const updatedCategories = deleteCategoryFromCategories(categories, category)
       updateCategoriesInLocalStorage(updatedCategories).then(response => {
@@ -157,40 +175,26 @@ function CategoriesTabContent() {
         })
       }).catch(err => { throw err })
     })
-  })
+  }
 
   return (
-    <div className='category-wrapper'>
-      {
-        categories.map((category, index) => {
-          return (
-            <React.Fragment key={`${category} + ${index}`}>
-              <h3>{category}</h3>
-              <img src={`${chrome.runtime.getURL('/images/delete-icon.svg')}`}
-                onClick={() => deleteCategoryClickHandler(category)} />
-            </React.Fragment>
-          )
-        })
-      }
-    </div>
+    <React.Fragment>
+      <div className='category-wrapper'>
+        {
+          categories.map((category, index) => {
+            return (
+              <React.Fragment key={`${category} + ${index}`}>
+                <h3>{category}</h3>
+                <img src={`${chrome.runtime.getURL('/images/delete-icon.svg')}`}
+                  onClick={() => deleteCategoryClickHandler(category)} />
+              </React.Fragment>
+            )
+          })
+        }
+      </div>
+      <button id='add-category-btn'>Add Category</button>
+    </React.Fragment>
   )
-}
-
-/**
- * Function that iterates over the tabCategories array and
- * @param {String[]} categories the array of strings that represent user defined categories
- * @param {String} category the single category that the user has chosen to delete
- */
-function deleteCategoryFromCategories(categories, category) {
-  return categories.map(function categoriesMapper(cat) {
-    if (cat !== category) {
-      return cat
-    }
-  }).filter(category => {
-    if ((category !== null || category !== undefined)) {
-      return category
-    }
-  })
 }
 
 /**
