@@ -19,9 +19,11 @@ function PopUp() {
   return React.createElement(
     React.Fragment,
     null,
+    React.createElement(NavBar, { navTabSelected: navTab, setNavTab: setNavTab }),
+    content,
     React.createElement(
       'div',
-      null,
+      { style: { fontSize: '0.75em' } },
       'Icons made by ',
       React.createElement(
         'a',
@@ -34,9 +36,7 @@ function PopUp() {
         { href: 'https://www.flaticon.com/', title: 'Flaticon' },
         'www.flaticon.com'
       )
-    ),
-    React.createElement(NavBar, { navTabSelected: navTab, setNavTab: setNavTab }),
-    content
+    )
   );
 }
 
@@ -95,7 +95,7 @@ function CurrentTabContent() {
     fetchCurrentUrl().then(function (data) {
       setUrl(data);
     });
-    fetchCurrentCategory().then(function (category) {
+    fetchCategoryForCurrentTab().then(function (category) {
       setCategory(category);
     });
   });
@@ -122,30 +122,86 @@ function CurrentTabContent() {
 function CategoriesTabContent() {
   var _React$useState7 = React.useState([]),
       _React$useState8 = _slicedToArray(_React$useState7, 2),
-      data = _React$useState8[0],
-      setData = _React$useState8[1];
+      categories = _React$useState8[0],
+      setCategories = _React$useState8[1];
+
+  var makeFetchCategoriesApiCall = function makeFetchCategoriesApiCall() {
+    return fetchCategories().then(function (data) {
+      return data;
+    });
+  };
 
   React.useEffect(function () {
-    fetchCategories().then(function (data) {
-      setData(data);
+    makeFetchCategoriesApiCall().then(function (data) {
+      setCategories(data);
     });
   }, []);
+
+  var deleteCategoryClickHandler = React.useCallback(function (category) {
+    fetchCategories().then(function (categories) {
+      var updatedCategories = deleteCategoryFromCategories(categories, category);
+      updateCategoriesInLocalStorage(updatedCategories).then(function (response) {
+        makeFetchCategoriesApiCall().then(function (data) {
+          setCategories(data);
+        });
+      }).catch(function (err) {
+        throw err;
+      });
+    });
+  });
+
   return React.createElement(
     'div',
     { className: 'category-wrapper' },
-    data.map(function (category) {
+    categories.map(function (category, index) {
       return React.createElement(
         React.Fragment,
-        null,
+        { key: category + ' + ' + index },
         React.createElement(
           'h3',
           null,
           category
         ),
-        React.createElement('img', { src: '' + chrome.runtime.getURL('/images/delete-icon.svg') })
+        React.createElement('img', { src: '' + chrome.runtime.getURL('/images/delete-icon.svg'),
+          onClick: function onClick() {
+            return deleteCategoryClickHandler(category);
+          } })
       );
     })
   );
+}
+
+/**
+ * Function that iterates over the tabCategories array and
+ * @param {String[]} categories the array of strings that represent user defined categories
+ * @param {String} category the single category that the user has chosen to delete
+ */
+function deleteCategoryFromCategories(categories, category) {
+  return categories.map(function categoriesMapper(cat) {
+    if (cat !== category) {
+      return cat;
+    }
+  }).filter(function (category) {
+    if (category !== null || category !== undefined) {
+      return category;
+    }
+  });
+}
+
+/**
+ * The function that will set the new categories in local storage
+ * @param {String[]} categories 
+ */
+function updateCategoriesInLocalStorage(categories) {
+  return new Promise(function (resolve, reject) {
+    try {
+      chrome.storage.sync.set({ 'categories': categories }, function storageSetterCallback() {
+        resolve(true);
+      });
+    } catch (err) {
+      reject(err);
+    }
+  });
 }
 
 /**
@@ -153,10 +209,14 @@ function CategoriesTabContent() {
  */
 function fetchCurrentUrl() {
   return new Promise(function (resolve, reject) {
-    return chrome.tabs.query({ active: true, currentWindow: true }, function tabQueryCallback(tabs) {
-      var url = tabs[0].url;
-      resolve(url);
-    });
+    try {
+      return chrome.tabs.query({ active: true, currentWindow: true }, function tabQueryCallback(tabs) {
+        var url = tabs[0].url;
+        resolve(url);
+      });
+    } catch (err) {
+      reject(err);
+    }
   });
 }
 
@@ -165,7 +225,7 @@ function fetchCurrentUrl() {
  * First, fetch the id of the current tab
  * Next, check the tabCategories object from localStorage for the tab id
  */
-function fetchCurrentCategory() {
+function fetchCategoryForCurrentTab() {
   return new Promise(function (resolve, reject) {
     fetchCurrentTabId().then(function (tabId) {
       fetchTabCategories().then(function (tabCategories) {
@@ -188,13 +248,23 @@ function fetchCurrentCategory() {
 
 /**
  * Get the categories that have been assigned to all tabs in tabCategories object
+ * Filter out all the null values from the array
+ * NOTE: Need to figure out why there are null values in the array
  */
 function fetchTabCategories() {
   return new Promise(function (resolve, reject) {
     chrome.storage.sync.get('tabCategories', function getterCallback(data) {
       var tabCategories = data.tabCategories;
 
-      resolve(tabCategories);
+      var filteredTabCategories = tabCategories.map(function (tabCategoryObj) {
+        if (tabCategoryObj !== null) {
+          return tabCategoryObj;
+        }
+        return null;
+      }).filter(function (tabCategoryObj) {
+        return tabCategoryObj;
+      }); //  implicitly converts each value to Boolean and returns truthy values
+      resolve(filteredTabCategories);
     });
   });
 }

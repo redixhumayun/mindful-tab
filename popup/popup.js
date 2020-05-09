@@ -13,9 +13,9 @@ function PopUp() {
 
   return (
     <React.Fragment>
-      <div>Icons made by <a href="https://www.flaticon.com/authors/kiranshastry" title="Kiranshastry">Kiranshastry</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
       <NavBar navTabSelected={navTab} setNavTab={setNavTab} />
       {content}
+      <div style={{ fontSize: '0.75em' }}>Icons made by <a href="https://www.flaticon.com/authors/kiranshastry" title="Kiranshastry">Kiranshastry</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
     </React.Fragment>
   )
 }
@@ -43,7 +43,7 @@ function CurrentTabContent() {
     fetchCurrentUrl().then(data => {
       setUrl(data)
     })
-    fetchCurrentCategory().then(category => {
+    fetchCategoryForCurrentTab().then(category => {
       setCategory(category)
     })
   })
@@ -61,20 +61,40 @@ function CurrentTabContent() {
  * Content that is displayed when a user picks the Categories tab in the pop up
  */
 function CategoriesTabContent() {
-  const [data, setData] = React.useState([])
+  const [categories, setCategories] = React.useState([])
+
+  const makeFetchCategoriesApiCall = () => {
+    return fetchCategories().then(data => {
+      return data
+    })
+  }
+
   React.useEffect(() => {
-    fetchCategories().then(data => {
-      setData(data)
+    makeFetchCategoriesApiCall().then(data => {
+      setCategories(data)
     })
   }, [])
+
+  const deleteCategoryClickHandler = React.useCallback((category) => {
+    fetchCategories().then(categories => {
+      const updatedCategories = deleteCategoryFromCategories(categories, category)
+      updateCategoriesInLocalStorage(updatedCategories).then(response => {
+        makeFetchCategoriesApiCall().then(data => {
+          setCategories(data)
+        })
+      }).catch(err => { throw err })
+    })
+  })
+
   return (
     <div className='category-wrapper'>
       {
-        data.map(category => {
+        categories.map((category, index) => {
           return (
-            <React.Fragment>
+            <React.Fragment key={`${category} + ${index}`}>
               <h3>{category}</h3>
-              <img src={`${chrome.runtime.getURL('/images/delete-icon.svg')}`} />
+              <img src={`${chrome.runtime.getURL('/images/delete-icon.svg')}`}
+                onClick={() => deleteCategoryClickHandler(category)} />
             </React.Fragment>
           )
         })
@@ -84,14 +104,51 @@ function CategoriesTabContent() {
 }
 
 /**
+ * Function that iterates over the tabCategories array and
+ * @param {String[]} categories the array of strings that represent user defined categories
+ * @param {String} category the single category that the user has chosen to delete
+ */
+function deleteCategoryFromCategories(categories, category) {
+  return categories.map(function categoriesMapper(cat) {
+    if (cat !== category) {
+      return cat
+    }
+  }).filter(category => {
+    if ((category !== null || category !== undefined)) {
+      return category
+    }
+  })
+}
+
+/**
+ * The function that will set the new categories in local storage
+ * @param {String[]} categories 
+ */
+function updateCategoriesInLocalStorage(categories) {
+  return new Promise((resolve, reject) => {
+    try {
+      chrome.storage.sync.set({ 'categories': categories }, function storageSetterCallback() {
+        resolve(true)
+      })
+    } catch(err) {
+      reject(err)
+    }
+  })
+}
+
+/**
  * Get the url that is currently entered for the tab
  */
 function fetchCurrentUrl() {
   return new Promise((resolve, reject) => {
-    return chrome.tabs.query({ active: true, currentWindow: true }, function tabQueryCallback(tabs) {
-      const url = tabs[0].url
-      resolve(url)
-    })
+    try {
+      return chrome.tabs.query({ active: true, currentWindow: true }, function tabQueryCallback(tabs) {
+        const url = tabs[0].url
+        resolve(url)
+      })
+    } catch(err) {
+      reject(err)
+    }
   })
 }
 
@@ -100,7 +157,7 @@ function fetchCurrentUrl() {
  * First, fetch the id of the current tab
  * Next, check the tabCategories object from localStorage for the tab id
  */
-function fetchCurrentCategory() {
+function fetchCategoryForCurrentTab() {
   return new Promise((resolve, reject) => {
     fetchCurrentTabId().then(tabId => {
       fetchTabCategories().then(tabCategories => {
@@ -121,12 +178,20 @@ function fetchCurrentCategory() {
 
 /**
  * Get the categories that have been assigned to all tabs in tabCategories object
+ * Filter out all the null values from the array
+ * NOTE: Need to figure out why there are null values in the array
  */
 function fetchTabCategories() {
   return new Promise((resolve, reject) => {
     chrome.storage.sync.get('tabCategories', function getterCallback(data) {
       const { tabCategories } = data
-      resolve(tabCategories)
+      const filteredTabCategories = tabCategories.map(tabCategoryObj => {
+        if (tabCategoryObj !== null) {
+          return tabCategoryObj
+        }
+        return null
+      }).filter(tabCategoryObj => tabCategoryObj) //  implicitly converts each value to Boolean and returns truthy values
+      resolve(filteredTabCategories)
     })
   })
 }
