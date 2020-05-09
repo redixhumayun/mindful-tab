@@ -39,6 +39,79 @@ function NavBar(props) {
 function CurrentTabContent() {
   const [url, setUrl] = React.useState()
   const [category, setCategory] = React.useState('')
+
+  /**
+   * Get the categories that have been assigned to all tabs in tabCategories object
+   * Filter out all the null values from the array
+   * NOTE: Need to figure out why there are null values in the array
+   */
+  function fetchTabCategories() {
+    return new Promise((resolve, reject) => {
+      chrome.storage.sync.get('tabCategories', function getterCallback(data) {
+        const { tabCategories } = data
+        const filteredTabCategories = tabCategories.map(tabCategoryObj => {
+          if (tabCategoryObj !== null) {
+            return tabCategoryObj
+          }
+          return null
+        }).filter(tabCategoryObj => tabCategoryObj) //  implicitly converts each value to Boolean and returns truthy values
+        resolve(filteredTabCategories)
+      })
+    })
+  }
+
+  /**
+   * Get the id of the current tab that the popup has been opened in
+   */
+  function fetchCurrentTabId() {
+    return new Promise((resolve, reject) => {
+      chrome.tabs.query({ active: true, currentWindow: true }, function tabQueryCallback(tabs) {
+        const id = tabs[0].id
+        resolve(id)
+      })
+    })
+  }
+
+  /**
+ * Get the category that the current tab has been assigned to
+ * First, fetch the id of the current tab
+ * Next, check the tabCategories object from localStorage for the tab id
+ */
+  function fetchCategoryForCurrentTab() {
+    return new Promise((resolve, reject) => {
+      fetchCurrentTabId().then(tabId => {
+        fetchTabCategories().then(tabCategories => {
+          const filteredTabCategory = tabCategories.filter(tabCategoryObj => tabCategoryObj.id === tabId)
+          if (filteredTabCategory.length > 0) {
+            resolve(filteredTabCategory[0].category)
+          } else {
+            resolve('')
+          }
+        }).catch(err => {
+          reject(err)
+        })
+      }).catch(err => {
+        reject(err)
+      })
+    })
+  }
+
+  /**
+   * Get the url that is currently entered for the tab
+   */
+  function fetchCurrentUrl() {
+    return new Promise((resolve, reject) => {
+      try {
+        return chrome.tabs.query({ active: true, currentWindow: true }, function tabQueryCallback(tabs) {
+          const url = tabs[0].url
+          resolve(url)
+        })
+      } catch (err) {
+        reject(err)
+      }
+    })
+  }
+
   React.useEffect(() => {
     fetchCurrentUrl().then(data => {
       setUrl(data)
@@ -46,7 +119,7 @@ function CurrentTabContent() {
     fetchCategoryForCurrentTab().then(category => {
       setCategory(category)
     })
-  })
+  }, [])
 
   return (
     <div className='current-tab-content'>
@@ -130,81 +203,9 @@ function updateCategoriesInLocalStorage(categories) {
       chrome.storage.sync.set({ 'categories': categories }, function storageSetterCallback() {
         resolve(true)
       })
-    } catch(err) {
+    } catch (err) {
       reject(err)
     }
-  })
-}
-
-/**
- * Get the url that is currently entered for the tab
- */
-function fetchCurrentUrl() {
-  return new Promise((resolve, reject) => {
-    try {
-      return chrome.tabs.query({ active: true, currentWindow: true }, function tabQueryCallback(tabs) {
-        const url = tabs[0].url
-        resolve(url)
-      })
-    } catch(err) {
-      reject(err)
-    }
-  })
-}
-
-/**
- * Get the category that the current tab has been assigned to
- * First, fetch the id of the current tab
- * Next, check the tabCategories object from localStorage for the tab id
- */
-function fetchCategoryForCurrentTab() {
-  return new Promise((resolve, reject) => {
-    fetchCurrentTabId().then(tabId => {
-      fetchTabCategories().then(tabCategories => {
-        const filteredTabCategory = tabCategories.filter(tabCategoryObj => tabCategoryObj.id === tabId)
-        if (filteredTabCategory.length > 0) {
-          resolve(filteredTabCategory[0].category)
-        } else {
-          resolve('')
-        }
-      }).catch(err => {
-        reject(err)
-      })
-    }).catch(err => {
-      reject(err)
-    })
-  })
-}
-
-/**
- * Get the categories that have been assigned to all tabs in tabCategories object
- * Filter out all the null values from the array
- * NOTE: Need to figure out why there are null values in the array
- */
-function fetchTabCategories() {
-  return new Promise((resolve, reject) => {
-    chrome.storage.sync.get('tabCategories', function getterCallback(data) {
-      const { tabCategories } = data
-      const filteredTabCategories = tabCategories.map(tabCategoryObj => {
-        if (tabCategoryObj !== null) {
-          return tabCategoryObj
-        }
-        return null
-      }).filter(tabCategoryObj => tabCategoryObj) //  implicitly converts each value to Boolean and returns truthy values
-      resolve(filteredTabCategories)
-    })
-  })
-}
-
-/**
- * Get the id of the current tab that the popup has been opened in
- */
-function fetchCurrentTabId() {
-  return new Promise((resolve, reject) => {
-    chrome.tabs.query({ active: true, currentWindow: true }, function tabQueryCallback(tabs) {
-      const id = tabs[0].id
-      resolve(id)
-    })
   })
 }
 
