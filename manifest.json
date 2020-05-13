@@ -1,6 +1,6 @@
 {
   "name": "MindfulTab",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "description": "A simple extension that reminds you to be mindful of every new tab you open",
   "permissions": ["tabs", "activeTab", "storage"],
   "background": {
